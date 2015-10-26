@@ -1,5 +1,9 @@
 package blogPost;
 
+import DAO.JdbcUserDAO;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -10,12 +14,18 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
 
+
+
 @WebServlet(
         name = "loginServlet",
         urlPatterns = "/login"
 )
 public class LoginServlet extends HttpServlet
 {
+
+    ApplicationContext context = new ClassPathXmlApplicationContext("servletContext.xml");
+    JdbcUserDAO service = context.getBean("UserDao", JdbcUserDAO.class);
+
     protected static final Map<String, String> userDatabase = new Hashtable<>();
 
     static {
@@ -70,8 +80,9 @@ public class LoginServlet extends HttpServlet
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         if(username == null || password == null ||
-                !LoginServlet.userDatabase.containsKey(username) ||
-                !password.equals(LoginServlet.userDatabase.get(username)))
+                !service.userLogin(username, password))
+//                !LoginServlet.userDatabase.containsKey(username) ||
+//                !password.equals(LoginServlet.userDatabase.get(username)))
 
         {
             request.setAttribute("loginFailed", true);
@@ -80,7 +91,7 @@ public class LoginServlet extends HttpServlet
         }
         else
         {
-            session.setAttribute("username", username);
+            session.setAttribute("username", username.toUpperCase());
             request.changeSessionId();
             response.sendRedirect("blogs");
         }
@@ -94,16 +105,23 @@ public class LoginServlet extends HttpServlet
         String username = request.getParameter("newUser");
         String password = request.getParameter("userPassword");
         System.out.print(username + password);
-        if(this.userDatabase.containsKey(username))
+        System.out.print(service.userExists("Tommy"));
+        if(service.userExists(username))
         {
+
             request.setAttribute("userExist", true);
             request.getRequestDispatcher("/WEB-INF/jsp/view/newUser.jsp")
                     .forward(request,response);
         }
         else
         {
-            userDatabase.put(username, password);
-            request.getSession().setAttribute("username", username);
+            Blogger temp = new Blogger();
+            temp.setPassword(password);
+            temp.setUsername(username);
+            service.insert(temp);
+
+            //userDatabase.put(username, password);
+            request.getSession().setAttribute("username", temp.getUsername());
             request.changeSessionId();
             response.sendRedirect("blogs");
 

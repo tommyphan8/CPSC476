@@ -181,10 +181,7 @@ public class BlogPostServlet extends HttpServlet
         post.setSubject(request.getParameter("subject"));
         post.setBody(request.getParameter("body"));
 
-        Date date = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a");
-        String formattedDate = sdf.format(date);
-        post.setTimeStamp(formattedDate);
+        post.setTimeStamp((new SimpleDateFormat("MM/dd/yyyy h:mm:ss a").format(new Date())));
 
         Part filePart = request.getPart("file1");
         if(filePart != null && filePart.getSize() > 0)
