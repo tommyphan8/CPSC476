@@ -1,0 +1,39 @@
+CREATE TABLE user
+(
+username varchar(30) PRIMARY KEY,
+password varchar(30) NOT NULL,
+
+);
+
+//Create account
+INSERT INTO user (username, password)
+values(Upper('Tommy'), Upper('Phan'))
+
+//Check if exists
+select username from user where username = Upper('Tommy')
+
+//Login Check
+select username from user where username = Upper('Tommy') and password = Upper('Phan')
+
+
+CREATE TABLE post
+(
+ID integer IDENTITY,
+userName varchar(30) NOT NULL,
+subject varchar(30),
+body varchar(140),
+timeStamp varchar(30),
+
+
+);
+
+attachment BLOB(5M)
+
+INSERT INTO post (username, subject, body, timeStamp)
+values('Tommy', 'hello', 'wassup man', '02-10-15')
+
+
+
+
+
+
