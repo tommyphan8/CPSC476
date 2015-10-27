@@ -26,15 +26,6 @@ public class LoginServlet extends HttpServlet
     ApplicationContext context = new ClassPathXmlApplicationContext("servletContext.xml");
     JdbcUserDAO service = context.getBean("UserDao", JdbcUserDAO.class);
 
-    protected static final Map<String, String> userDatabase = new Hashtable<>();
-
-    static {
-        userDatabase.put("Nicholas", "password");
-        userDatabase.put("Sarah", "drowssap");
-        userDatabase.put("Mike", "wordpass");
-        userDatabase.put("John", "green");
-        userDatabase.put("A", "A");
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -81,9 +72,6 @@ public class LoginServlet extends HttpServlet
         String password = request.getParameter("password");
         if(username == null || password == null ||
                 !service.userLogin(username, password))
-//                !LoginServlet.userDatabase.containsKey(username) ||
-//                !password.equals(LoginServlet.userDatabase.get(username)))
-
         {
             request.setAttribute("loginFailed", true);
             request.getRequestDispatcher("/WEB-INF/jsp/view/login.jsp")
@@ -120,7 +108,6 @@ public class LoginServlet extends HttpServlet
             temp.setUsername(username);
             service.insert(temp);
 
-            //userDatabase.put(username, password);
             request.getSession().setAttribute("username", temp.getUsername());
             request.changeSessionId();
             response.sendRedirect("blogs");

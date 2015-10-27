@@ -1,5 +1,10 @@
 package blogPost;
 
+import DAO.JdbcPostDAO;
+import DAO.JdbcUserDAO;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.MultipartConfig;
@@ -23,14 +28,14 @@ import java.util.Map;
 )
 @MultipartConfig(
         fileSizeThreshold = 5_242_880, //5MB
-        maxFileSize = 20_971_520L, //20MB
-        maxRequestSize = 41_943_040L //40MB
+        maxFileSize = 5_242_880, //20MB
+        maxRequestSize = 5_242_880 //40MB
 )
 public class BlogPostServlet extends HttpServlet
 {
-    private volatile int BLOG_ID_SEQUENCE = 1;
 
-    protected Map<Integer, BlogPost> blogDatabase = new LinkedHashMap<>();
+    ApplicationContext context = new ClassPathXmlApplicationContext("servletContext.xml");
+    JdbcPostDAO service = context.getBean("PostDAO", JdbcPostDAO.class);
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -52,8 +57,16 @@ public class BlogPostServlet extends HttpServlet
             case "view":
                 this.viewBlogs(request, response);
                 break;
-            case "download":
-                this.downloadAttachment(request, response);
+//            case "download":
+//                this.downloadAttachment(request, response);
+//                break;
+            case "profileHome":
+                if(request.getSession().getAttribute("username") == null)
+                {
+                    response.sendRedirect("blogs");
+                    return;
+                }
+                this.listProfile(request, response);
                 break;
             case "newUser":
                 if(request.getSession().getAttribute("username") == null) {
@@ -119,6 +132,7 @@ public class BlogPostServlet extends HttpServlet
     {
         String idString = request.getParameter("blogID");
         BlogPost post = this.getBlogPost(idString, response);
+
         if(post == null)
             return;
 
@@ -129,45 +143,55 @@ public class BlogPostServlet extends HttpServlet
                 .forward(request, response);
     }
 
-    private void downloadAttachment(HttpServletRequest request,
-                                    HttpServletResponse response)
-            throws ServletException, IOException
-    {
-        String idString = request.getParameter("ticketId");
-        BlogPost post = this.getBlogPost(idString, response);
-        if(post == null)
-            return;
-
-        String name = request.getParameter("attachment");
-        if(name == null)
-        {
-            response.sendRedirect("tickets?action=view&ticketId=" + idString);
-            return;
-        }
-
-        Attachment attachment = post.getAttachment(name);
-        if(attachment == null)
-        {
-            response.sendRedirect("tickets?action=view&ticketId=" + idString);
-            return;
-        }
-
-        response.setHeader("Content-Disposition",
-                "attachment; filename=" + attachment.getName());
-        response.setContentType("application/octet-stream");
-
-        ServletOutputStream stream = response.getOutputStream();
-        stream.write(attachment.getContents());
-    }
+//    private void downloadAttachment(HttpServletRequest request,
+//                                    HttpServletResponse response)
+//            throws ServletException, IOException
+//    {
+//        String idString = request.getParameter("ticketId");
+//        BlogPost post = this.getBlogPost(idString, response);
+//        if(post == null)
+//            return;
+//
+//        String name = request.getParameter("attachment");
+//        if(name == null)
+//        {
+//            response.sendRedirect("tickets?action=view&ticketId=" + idString);
+//            return;
+//        }
+//
+//        Attachment attachment = post.getAttachment(name);
+//        if(attachment == null)
+//        {
+//            response.sendRedirect("tickets?action=view&ticketId=" + idString);
+//            return;
+//        }
+//
+//        response.setHeader("Content-Disposition",
+//                "attachment; filename=" + attachment.getName());
+//        response.setContentType("application/octet-stream");
+//
+//        ServletOutputStream stream = response.getOutputStream();
+//        stream.write(attachment.getContents());
+//    }
 
     private void listBlogs(HttpServletRequest request,
                            HttpServletResponse response)
             throws ServletException, IOException
     {
-        request.setAttribute("BlogDatabase", this.blogDatabase);
-//        request.setAttribute("session", request.getSession());
+
+        request.setAttribute("BlogDatabase", service.getAll());
         request.getRequestDispatcher("/WEB-INF/jsp/view/listBlogs.jsp")
                 .forward(request, response);
+    }
+
+    private void listProfile(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException
+    {
+        request.setAttribute("BlogDatabase", service.getALLUser(request.getParameter("username")));
+
+        request.getRequestDispatcher("WEB-INF/jsp/view/listProfile.jsp")
+                .forward(request, response);
+
     }
 
     private void createBlog(HttpServletRequest request,
@@ -175,7 +199,7 @@ public class BlogPostServlet extends HttpServlet
             throws ServletException, IOException
     {
         BlogPost post = new BlogPost();
-        post.setCustomerName(
+        post.setUserName(
                 (String) request.getSession().getAttribute("username")
         );
         post.setSubject(request.getParameter("subject"));
@@ -183,22 +207,24 @@ public class BlogPostServlet extends HttpServlet
 
         post.setTimeStamp((new SimpleDateFormat("MM/dd/yyyy h:mm:ss a").format(new Date())));
 
-        Part filePart = request.getPart("file1");
-        if(filePart != null && filePart.getSize() > 0)
-        {
-            Attachment attachment = this.processAttachment(filePart);
-            if(attachment != null)
-                post.addAttachment(attachment);
-        }
+//        Part filePart = request.getPart("file1");
+//        if(filePart != null && filePart.getSize() > 0)
+//        {
+//            Attachment attachment = this.processAttachment(filePart);
+//            if(attachment != null)
+//                post.addAttachment(attachment);
+//        }
 
-        int id;
-        synchronized(this)
-        {
-            id = this.BLOG_ID_SEQUENCE++;
-            this.blogDatabase.put(id, post);
-        }
+//        int id;
+//        synchronized(this)
+//        {
+//            id = this.BLOG_ID_SEQUENCE++;
+//            this.blogDatabase.put(id, post);
+//        }
 
-        response.sendRedirect("blogs?action=view&blogID=" + id);
+        service.create(post);
+
+        response.sendRedirect("blogs?action=view&blogID=" + service.getBlogID(post));
     }
 
     private Attachment processAttachment(Part filePart)
@@ -233,7 +259,7 @@ public class BlogPostServlet extends HttpServlet
 
         try
         {
-            BlogPost blogPost = this.blogDatabase.get(Integer.parseInt(idString));
+            BlogPost blogPost = service.getBlogPost(Integer.parseInt(idString));
             if(blogPost == null)
             {
                 response.sendRedirect("blogs");

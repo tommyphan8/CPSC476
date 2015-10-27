@@ -18,5 +18,9 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
+    <bean id="PostDAO" class="DAO.JdbcPostDAO">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
 
 </beans>

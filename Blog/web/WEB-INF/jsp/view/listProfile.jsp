@@ -18,9 +18,7 @@
                 String temp = (String)session.getAttribute("username");
                 %><a href="<c:url value="/login?logout" />">Logout</a>
                   <a href="<c:url value="/blogs">
-                  <c:param name="action" value="profileHome" />
-                  <c:param name="username" value="<%=temp%>" />
-                  </c:url>">Profile Home</a>
+                  </c:url>">Home</a>
         <%
             }
             else

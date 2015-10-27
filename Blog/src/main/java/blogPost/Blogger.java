@@ -8,11 +8,6 @@ public class Blogger {
 
     private String password;
 
-//    public Blogger(String username, String password)
-//    {
-//        this.username = username.toUpperCase();
-//        this.password = password;
-//    }
     public void setPassword(String password)
     {
         this.password = password;

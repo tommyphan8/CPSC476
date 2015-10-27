@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class BlogPost
 {
-    private String customerName;
+    private String userName;
 
     private String subject;
 
@@ -14,20 +14,26 @@ public class BlogPost
 
     private String timeStamp;
 
-    private Map<String, Attachment> attachments = new LinkedHashMap<>();
+    private int ID;
+
+
+    public int getID(){ return this.ID;}
+
+    public void setID(int ID){this.ID = ID;}
+
 
     public void setTimeStamp(String timeStamp) { this.timeStamp = timeStamp;}
 
     public String getTimeStamp() {return timeStamp;}
 
-    public String getCustomerName()
+    public String getUserName()
     {
-        return customerName;
+        return userName;
     }
 
-    public void setCustomerName(String customerName)
+    public void setUserName(String customerName)
     {
-        this.customerName = customerName;
+        this.userName = customerName;
     }
 
     public String getSubject()
@@ -50,23 +56,5 @@ public class BlogPost
         this.body = body;
     }
 
-    public Attachment getAttachment(String name)
-    {
-        return this.attachments.get(name);
-    }
 
-    public Collection<Attachment> getAttachments()
-    {
-        return this.attachments.values();
-    }
-
-    public void addAttachment(Attachment attachment)
-    {
-        this.attachments.put(attachment.getName(), attachment);
-    }
-
-    public int getNumberOfAttachments()
-    {
-        return this.attachments.size();
-    }
 }

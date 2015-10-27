@@ -1,8 +1,8 @@
-<%@ page import="java.util.Map" %>
+<%@ page import="java.util.List" %>
 <%
     @SuppressWarnings("unchecked")
-    Map<Integer, BlogPost> blogDatabase =
-            (Map<Integer, BlogPost>)request.getAttribute("BlogDatabase");
+    List<BlogPost> blogDatabase =
+            (List<BlogPost>)request.getAttribute("BlogDatabase");
 
 
 %>
@@ -15,7 +15,13 @@
         <%
             if(session.getAttribute("username") != null)
             {
-                %><a href="<c:url value="/login?logout" />">Logout</a><%
+                String temp = (String)session.getAttribute("username");
+                %><a href="<c:url value="/login?logout" />">Logout</a>
+                  <a href="<c:url value="/blogs">
+                  <c:param name="action" value="profileHome" />
+                  <c:param name="username" value="<%=temp%>" />
+                  </c:url>">Profile Home</a>
+        <%
             }
             else
             {
@@ -36,17 +42,18 @@
             }
             else
             {
-                System.out.print(blogDatabase.keySet().size());
-                for(int i = blogDatabase.keySet().size(); i >=1; i--)
+
+                for(int i = blogDatabase.size()-1; i >= 0; i--)
                 {
-                    String idString = Integer.toString(i);
                     BlogPost post = blogDatabase.get(i);
-                    %>meowPost #<%= idString %>: <a href="<c:url value="/blogs">
-                        <c:param name="action" value="view" />
-                        <c:param name="blogID" value="<%= idString %>" />
-                    </c:url>"><%= post.getSubject() %></a> (Blogger:
-        <%= post.getCustomerName() %>): <%= post.getTimeStamp() %><br /><%
+                    %>meowPost #<%= post.getID() %>: <a href="<c:url value="/blogs">
+                         <c:param name="action" value="view" />
+                         <c:param name="blogID" value="<%= Integer.toString(post.getID()) %>" />
+                         </c:url>"><%= post.getSubject() %></a> (Blogger:
+                     <%= post.getUserName() %>): <%= post.getTimeStamp() %><br /><%
+
                 }
+
             }
         %>
     </body>
