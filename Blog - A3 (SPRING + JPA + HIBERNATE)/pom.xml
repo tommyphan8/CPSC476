@@ -6,7 +6,8 @@
 
     <groupId>groupId</groupId>
     <artifactId>Blog</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.3</version>
+    <packaging>war</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

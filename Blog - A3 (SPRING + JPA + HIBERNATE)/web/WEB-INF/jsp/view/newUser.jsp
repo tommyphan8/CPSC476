@@ -22,7 +22,7 @@
 
         %>
 
-        <form method="POST" action="/login">
+        <form method="POST" action="login">
             <input type="hidden" name="action" value ="newUser">
             New User<br/>
             <input type="text" name="newUser"><br/><br/>
